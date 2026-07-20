@@ -27,7 +27,7 @@ services:
     networks:
       - arr_network
     restart: unless-stopped
-  
+
   # MOVIES
   radarr:
     image: lscr.io/linuxserver/radarr:latest
@@ -70,7 +70,7 @@ services:
       <<: *healthcheck
     networks:
       - arr_network
-    restart: unless-stopped  
+    restart: unless-stopped
 
   # INDEXERS
   prowlarr:
@@ -116,7 +116,7 @@ services:
       - ${CONFIG_PATH}/jellyfin:/config
       - ${MEDIA_PATH}:/media
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:8096 || exit 1
+      test: curl --fail --silent http://localhost:8096/health || exit 1
       <<: *healthcheck
     network_mode: host
     restart: unless-stopped
@@ -134,7 +134,7 @@ services:
       - ${CONFIG_PATH}/plex:/config
       - ${MEDIA_PATH}:/media
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:32400 || exit 1
+      test: curl --fail --silent http://localhost:32400/identity || exit 1
       <<: *healthcheck
     network_mode: host
     restart: unless-stopped
