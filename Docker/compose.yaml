@@ -1,0 +1,152 @@
+services:
+  # TORRENTING
+  qbittorrent: 
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    env_file: .env
+    environment:
+      - WEBUI_PORT=8080
+    volumes:
+      - ${QBTCONFIG_PATH}:/config
+      - ${DOWNLOADS_PATH}:/downloads
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    # Changing the WebUI port will break the healthcheck
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+      start_period: 30s
+      timeout: 3s
+      interval: 30s
+      retries: 3
+    networks:
+      - arr_network
+    restart: unless-stopped
+  
+  # MOVIES
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    env_file: .env
+    volumes:
+      - ${CONFIG_PATH}/radarr:/config
+      - ${DOWNLOADS_PATH}:/downloads
+      - ${MOVIES_PATH}:/movies
+    ports:
+      - 7878:7878
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:7878/ping || exit 1
+      start_period: 30s
+      timeout: 3s
+      interval: 30s
+      retries: 3
+    networks:
+      - arr_network
+    restart: unless-stopped
+
+  # TV
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Stockholm
+    volumes:
+      - ${CONFIG_PATH}/sonarr:/config
+      - ${DOWNLOADS_PATH}:/downloads
+      - ${TV_PATH}:/tv
+    ports:
+      - 8989:8989
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8989/ping || exit 1
+      start_period: 30s
+      timeout: 3s
+      interval: 30s
+      retries: 3
+    networks:
+      - arr_network
+    restart: unless-stopped  
+
+  # INDEXERS
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    env_file: .env
+    volumes:
+      - ${CONFIG_PATH}/prowlarr:/config
+    ports:
+      - 9696:9696
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:9696/ping || exit 1
+      start_period: 30s
+      timeout: 3s
+      interval: 30s
+      retries: 3
+    networks:
+      - arr_network
+    restart: unless-stopped
+
+  # SUBTITLES
+  bazarr:
+    image: lscr.io/linuxserver/bazarr
+    container_name: bazarr
+    env_file: .env
+    volumes:
+      - ${CONFIG_PATH}/bazarr:/config
+      - ${MEDIA_PATH}:/media
+    ports:
+      - 6767:6767
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:6767 || exit 1
+      start_period: 30s
+      timeout: 3s
+      interval: 30s
+      retries: 3
+    networks:
+      - arr_network
+    restart: unless-stopped
+
+  # MEDIA
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    volumes:
+      - ${CONFIG_PATH}/jellyfin:/config
+      - ${MEDIA_PATH}:/media
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8096 || exit 1
+      start_period: 30s
+      timeout: 3s
+      interval: 30s
+      retries: 3
+    network_mode: host
+    restart: unless-stopped
+
+  # MEDIA
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    env_file: .env
+    environment:
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM}
+    volumes:
+      - ${CONFIG_PATH}/plex:/config
+      - ${MEDIA_PATH}:/media
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:32400 || exit 1
+      start_period: 30s
+      timeout: 3s
+      interval: 30s
+      retries: 3
+    network_mode: host
+    restart: unless-stopped
+
+networks:
+  arr_network:
+    name: arr_network
+    external: true
+
+volumes:
