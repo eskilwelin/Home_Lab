@@ -67,7 +67,7 @@ services:
     ports:
       - 6379:6379
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "PASSWORD", "ping"]
       <<: *healthcheck
     restart: unless_stopped
     networks:
@@ -76,3 +76,6 @@ services:
 networks:
   prom_network:
   db_network:
+
+secrets:
+  redis_password:
