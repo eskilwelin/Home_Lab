@@ -1,0 +1,78 @@
+x-healthcheck: &healthcheck
+  start_period: 15s
+  timeout: 3s
+  interval: 30s
+  retries: 3
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    depends_on:
+      - cadvisor
+    env_file: .env
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports: 
+      - 9090:9090
+    volumes:
+      - 
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'GET /api/health HTTP/1.1\r\nHost: localhost:9090\r\n\r\n' | nc localhost 9090 | grep '200 OK' || exit 1"]
+      <<: *healthcheck
+    restart: unless_stopped
+    network: 
+      - prom_network
+
+  grafana:
+    image:
+    container_name: grafana
+    depends_on:
+      - prometheus
+    env_file: .env
+    environment:
+      - 
+    ports: 
+      - 3000:3000
+    volumes:
+      - 
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'GET /api/health HTTP/1.1\r\nHost: localhost:3000\r\n\r\n' | nc localhost 3000 | grep '200 OK' || exit 1"]
+      <<: *healthcheck
+    restart: unless_stopped
+    networks:
+      - prom_network
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    depends_on: redis
+    env_file: .env
+    ports:
+      - 8081:8081
+    volumes:
+      -
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'GET /api/health HTTP/1.1\r\nHost: localhost:8081\r\n\r\n' | nc localhost 8081 | grep '200 OK' || exit 1"]
+      <<: *healthcheck
+    restart: unless_stopped
+    networks:
+      - prom_network
+      - db_network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    env_file: .env
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      <<: *healthcheck
+    restart: unless_stopped
+    networks:
+      - db_network
+
+networks:
+  prom_network:
+  db_network:
