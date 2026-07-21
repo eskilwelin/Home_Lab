@@ -5,77 +5,67 @@ x-healthcheck: &healthcheck
   retries: 3
 
 services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - 8081:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless_stopped
+    networks:
+      - monitoring
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
     depends_on:
       - cadvisor
-    env_file: .env
     command:
       - --config.file=/etc/prometheus/prometheus.yml
     ports: 
       - 9090:9090
     volumes:
-      - 
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     healthcheck:
-      test: ["CMD-SHELL", "echo 'GET /api/health HTTP/1.1\r\nHost: localhost:9090\r\n\r\n' | nc localhost 9090 | grep '200 OK' || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:9090/-/healthy || exit 1"]
       <<: *healthcheck
     restart: unless_stopped
-    network: 
-      - prom_network
+    networks: 
+      - monitoring
 
   grafana:
     image: grafana/grafana
     container_name: grafana
     depends_on:
       - prometheus
-    env_file: .env
     environment:
-      - 
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_password
     ports: 
       - 3000:3000
     volumes:
-      - 
+      - grafana_data:/var/lib/grafana
     healthcheck:
-      test: ["CMD-SHELL", "echo 'GET /api/health HTTP/1.1\r\nHost: localhost:3000\r\n\r\n' | nc localhost 3000 | grep '200 OK' || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/api/health || exit 1"]
       <<: *healthcheck
     restart: unless_stopped
     networks:
-      - prom_network
-
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
-    depends_on: redis
-    env_file: .env
-    ports:
-      - 8081:8081
-    volumes:
-      -
-    healthcheck:
-      test: ["CMD-SHELL", "echo 'GET /api/health HTTP/1.1\r\nHost: localhost:8081\r\n\r\n' | nc localhost 8081 | grep '200 OK' || exit 1"]
-      <<: *healthcheck
-    restart: unless_stopped
-    networks:
-      - prom_network
-      - db_network
-
-  redis:
-    image: redis:latest
-    container_name: redis
-    env_file: .env
-    ports:
-      - 6379:6379
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "PASSWORD", "ping"]
-      <<: *healthcheck
-    restart: unless_stopped
-    networks:
-      - db_network
+      - monitoring
+    secrets:
+      - grafana_password
 
 networks:
-  prom_network:
-  db_network:
+  monitoring:
 
 secrets:
-  redis_password:
+  grafana_password:
+    file: grafana_password.txt
+  
+volumes:
+  prometheus_data:
+  grafana_data:

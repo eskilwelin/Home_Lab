@@ -1,0 +1,21 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    env_file: .env
+    ports:
+      - 6379:6379
+    volumes:
+      - /mnt/data/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$(cat /run/secrets/db_password)\" ping | grep -q PONG"]
+      <<: *healthcheck
+    restart: unless_stopped
+    networks:
+      - database
+    secrets:
+      - db_password
+
+secrets:
+  db_password:
+    file: db_password.txt
