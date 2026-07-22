@@ -20,6 +20,11 @@ configs:
           scrape_interval: 5s
           static_configs:
             - targets: ['node-exporter:9100']
+    alerting:
+    alertmanagers:
+      - scheme: http
+        static_configs:
+          - targets: [ 'alertmanager:9093' ]
 
 services:
   cadvisor:
@@ -77,6 +82,21 @@ services:
     networks:
       - monitoring
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    depends_on:
+      - prometheus
+    ports:
+      - 9093:9093
+    volumes:
+      - "./alertmanager:/config"
+      - alertmanager-data:/data
+    command: 
+      - "--config.file=/config/alertmanager.yml --log.level=debug"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -107,3 +127,4 @@ secrets:
 
 volumes:
   grafana_data:
+  alertmanager_data:
