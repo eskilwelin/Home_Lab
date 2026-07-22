@@ -1,4 +1,5 @@
 # Grafana Dashboard Fixes — cAdvisor / node_exporter
+Import dashboard: 10566 - Docker Container & Host Metrics from both cAdvisor and Node Exporter 
 
 Common issues when importing community "Docker and OS metrics" style dashboards against a Prometheus + cAdvisor + node_exporter stack.
 

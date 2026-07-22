@@ -10,12 +10,12 @@ groups:
           summary: "High CPU on {{ $labels.instance }}"
           
       - alert: HighRAM
-        expr: 100 - (avg by(instance) (rate(node_ram_seconds_total{mode="idle"}[5m])) * 100) > 70
+        expr: 100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 70
         for: 5m
         labels:
           severity: warning
         annotations:
-          summart: "High RAM on {{ $labels.instance }}"
+          summary: "High RAM on {{ $labels.instance }}"
 
       - alert: ContainerDown
         expr: time() - container_last_seen{name=~"radarr|sonarr|prowlarr|bazarr|qbittorrent"} > 60

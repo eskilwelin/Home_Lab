@@ -45,6 +45,7 @@ services:
       - node-exporter
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-lifecycle"
     ports:
       - 9090:9090
     volumes:
@@ -59,12 +60,14 @@ services:
 
   alertmanager:
     image: prom/alertmanager:latest
+    container_name: alertmanager
     depends_on:
       - prometheus
     expose:
       - 9093
     volumes:
       - ./alertmanager.yml:/config/alertmanager.yml:ro
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
       - alertmanager_data:/data
     command: 
       - "--config.file=/config/alertmanager.yml" 
@@ -75,8 +78,6 @@ services:
     secrets:
       - smtp_password
 
-  # Import dashboard: 10566 
-  # Docker Container & Host Metrics from both cAdvisor and Node Exporter 
   grafana:
     image: grafana/grafana
     container_name: grafana
