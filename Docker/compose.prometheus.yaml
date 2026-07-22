@@ -4,6 +4,15 @@ x-healthcheck: &healthcheck
   interval: 30s
   retries: 3
 
+configs:
+  prometheus_config:
+    content: |
+      scrape_configs:
+        - job_name: 'cadvisor'
+          scrape_interval: 5s
+          static_configs:
+            - targets: ['cadvisor:8080']
+
 services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -15,7 +24,7 @@ services:
     - /var/run:/var/run:rw
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
-    restart: unless_stopped
+    restart: unless-stopped
     networks:
       - monitoring
 
@@ -26,16 +35,18 @@ services:
       - cadvisor
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
     ports: 
       - 9090:9090
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+        uid: "65534"    # Required: numeric UID for 'nobody' user
+        gid: "65534"    # Required: numeric GID for 'nobody' group
+        mode: 0400      # Required: read-only permissions
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:9090/-/healthy || exit 1"]
       <<: *healthcheck
-    restart: unless_stopped
+    restart: unless-stopped
     networks: 
       - monitoring
 
@@ -54,7 +65,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/api/health || exit 1"]
       <<: *healthcheck
-    restart: unless_stopped
+    restart: unless-stopped
     networks:
       - monitoring
     secrets:
@@ -68,5 +79,4 @@ secrets:
     file: grafana_password.txt
   
 volumes:
-  prometheus_data:
   grafana_data:
