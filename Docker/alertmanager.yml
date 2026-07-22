@@ -1,13 +1,13 @@
 route:
   receiver: 'mail'
-  repeat_interval: 4h
+  repeat_interval: 12h
   group_by: [ alertname ]
 
 receivers:
   - name: 'mail'
     email_configs:
-      - smarthost: 'smtp.gmail.com:465'
-        auth_username: 'your_mail@gmail.com'
-        auth_password: ""
-        from: 'your_mail@gmail.com'
-        to: 'some_mail@gmail.com'
+      - smarthost: 'smtp.gmail.com:587'
+        auth_username: 'serveralertsacc@gmail.com'
+        auth_password_file: '/run/secrets/smtp_password'
+        from: 'serveralertsacc@gmail.com'
+        to: 'eskilwelin@gmail.com'
