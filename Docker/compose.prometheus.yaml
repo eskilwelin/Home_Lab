@@ -49,7 +49,7 @@ services:
       - 9090:9090
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus-data:/data
+      - prometheus_data:/data
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:9090/-/healthy || exit 1"]
       <<: *healthcheck
@@ -65,15 +65,18 @@ services:
       - 9093
     volumes:
       - ./alertmanager.yml:/config/alertmanager.yml:ro
-      - alertmanager-data:/data
+      - alertmanager_data:/data
     command: 
-      - "--config.file=/config/alertmanager.yml --log.level=debug"
+      - "--config.file=/config/alertmanager.yml" 
+      - "--log.level=debug"
     restart: unless-stopped
     networks:
       - monitoring
     secrets:
       - smtp_password
 
+  # Import dashboard: 10566 
+  # Docker Container & Host Metrics from both cAdvisor and Node Exporter 
   grafana:
     image: grafana/grafana
     container_name: grafana
