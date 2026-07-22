@@ -11,3 +11,6 @@ receivers:
         auth_password_file: '/run/secrets/smtp_password'
         from: 'serveralertsacc@gmail.com'
         to: 'eskilwelin@gmail.com'
+        html: '{{ template "email.custom.html" . }}'
+        headers:
+          Subject: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'

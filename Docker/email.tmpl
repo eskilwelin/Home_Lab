@@ -1,0 +1,33 @@
+{{ define "email.custom.html" }}
+{{ $status := .Status }}
+{{ $color := "#e8a33d" }}
+{{ if eq .CommonLabels.severity "critical" }}{{ $color = "#d9463c" }}{{ end }}
+{{ if eq $status "resolved" }}{{ $color = "#3d9e4f" }}{{ end }}
+
+<div style="font-family: Arial, sans-serif; max-width: 600px;">
+  <div style="background-color: {{ $color }}; color: white; padding: 12px 16px; border-radius: 4px 4px 0 0;">
+    <h2 style="margin: 0;">{{ .CommonLabels.alertname }} — {{ .Status | toUpper }}</h2>
+  </div>
+  <div style="border: 1px solid #ddd; border-top: none; padding: 16px; border-radius: 0 0 4px 4px;">
+    <p><b>Severity:</b> {{ .CommonLabels.severity }}</p>
+    <p><b>Firing since:</b> {{ (index .Alerts 0).StartsAt.Format "2006-01-02 15:04:05 MST" }}</p>
+    <table style="border-collapse: collapse; width: 100%; margin-top: 10px;">
+      <tr style="background-color: #f5f5f5;">
+        <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">Instance</th>
+        <th style="text-align: left; padding: 6px; border: 1px solid #ddd;">Detail</th>
+      </tr>
+      {{ range .Alerts }}
+      <tr>
+        <td style="padding: 6px; border: 1px solid #ddd;">
+          {{ .Labels.instance }}{{ if .Labels.mountpoint }} ({{ .Labels.mountpoint }}){{ end }}{{ if .Labels.name }} ({{ .Labels.name }}){{ end }}
+        </td>
+        <td style="padding: 6px; border: 1px solid #ddd;">{{ .Annotations.summary }}</td>
+      </tr>
+      {{ end }}
+    </table>
+    <p style="margin-top: 16px; font-size: 12px; color: #888;">
+      {{ len .Alerts }} alert(s) in this group — grouped by alertname, repeats every 12h while firing.
+    </p>
+  </div>
+</div>
+{{ end }}

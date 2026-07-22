@@ -68,6 +68,7 @@ services:
       - 9093
     volumes:
       - ./alertmanager.yml:/config/alertmanager.yml:ro
+      - ./templates/email.tmpl:/config/email.tmpl:ro
       - alertmanager_data:/data
     command: 
       - "--config.file=/config/alertmanager.yml" 
