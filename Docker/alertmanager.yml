@@ -1,3 +1,6 @@
+templates:
+  - '/config/email.tmpl'
+
 route:
   receiver: 'mail'
   repeat_interval: 12h
