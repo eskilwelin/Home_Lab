@@ -7,7 +7,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High CPU on {{ $labels.instance }} — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "High CPU on {{ $labels.instance }}"
           
       - alert: HighRAM
         expr: 100 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) > 70
@@ -15,7 +15,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High RAM on {{ $labels.instance }} — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "High RAM on {{ $labels.instance }}"
 
       - alert: ContainerDown
         expr: time() - container_last_seen{name=~"radarr|sonarr|prowlarr|bazarr|qbittorrent|plex|jellyfin"} > 60
@@ -23,7 +23,7 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "{{ $labels.name }} is down — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "{{ $labels.name }} is down"
 
       - alert: MonitoringDown
         expr: time() - container_last_seen{name=~"cadvisor|node-exporter|alertmanager|grafana"} > 60
@@ -31,7 +31,7 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "{{ $labels.name }} is down — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "{{ $labels.name }} is down"
 
       - alert: HighSwapUsage
         expr: (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100 > 50
@@ -39,15 +39,15 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High swap usage on {{ $labels.instance }} — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "High swap usage on {{ $labels.instance }}"
 
       - alert: ContainerRestarting
-        expr: rate(container_last_seen{name=~"radarr|sonarr|prowlarr|bazarr|qbittorrent|plex|jellyfin"}[10m]) > 0.05
-        for: 5m
+        expr: changes(container_start_time_seconds{name=~"radarr|sonarr|prowlarr|bazarr|qbittorrent|plex|jellyfin"}[15m]) > 2
+        for: 0m
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.name }} is restarting frequently — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "{{ $labels.name }} is restarting frequently"
 
       - alert: DiskSpaceLow
         expr: (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"} * 100) < 10
@@ -55,7 +55,7 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Low disk space on {{ $labels.instance }} ({{ $labels.mountpoint }}) — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "Low disk space on {{ $labels.instance }} ({{ $labels.mountpoint }})"
 
       - alert: DiskWillFillIn24h
         expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}[6h], 24*3600) < 0
@@ -63,4 +63,4 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "{{ $labels.mountpoint }} on {{ $labels.instance }} predicted to fill within 24h — http://homeserver:3000/d/Ss3q6hSZk/homeserverdashboard"
+          summary: "{{ $labels.mountpoint }} on {{ $labels.instance }} predicted to fill within 24h"
