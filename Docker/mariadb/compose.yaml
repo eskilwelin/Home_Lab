@@ -1,0 +1,23 @@
+services:
+  
+  fileserver:
+    build:
+      secrets:
+      - samba_secrets
+      context: .
+    container_name: fileserver
+    ports: 
+     - "445:445"
+    volumes: 
+      - ./share_data:/share
+    networks:
+      - backend
+
+
+secrets:
+  samba_secrets: 
+    file: samba_secrets.txt
+
+networks:
+  frontend:
+  backend:
