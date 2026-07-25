@@ -33,7 +33,38 @@ services:
     restart: unless-stopped
     networks:
       - backend
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    env_file: phpmyadmin.env
+    expose:
+      - "80"
+    restart: unless-stopped
+    networks:
+      - frontend
+      - backend
     
+  nginx:
+    image: nginx:latest
+    ports:
+      - "443:443"
+    depends_on:
+      phpmyadmin:
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      <<: *healthcheck    
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
+      - ./key.pem:/etc/nginx/ssl/key.pem:ro
+      - ./cert.pem:/etc/nginx/ssl/cert.pem:ro
+    restart: unless-stopped
+    networks:
+      - frontend
+
 volumes:
   mariadb_data:
 
