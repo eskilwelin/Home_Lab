@@ -1,4 +1,4 @@
-x-healthcheck: &healtcheck
+x-healthcheck: &healthcheck
   start_period: 15s
   interval: 30s
   timeout: 5s

@@ -1,5 +1,4 @@
 #!/bin/bash
-umask 027
 set -e
 usermod -aG backupuser eskil
 chown backupuser:backupuser /share

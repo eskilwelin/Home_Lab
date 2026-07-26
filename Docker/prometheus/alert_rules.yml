@@ -17,7 +17,7 @@ groups:
         annotations:
           summary: "High RAM on {{ $labels.instance }}"
 
-      - alert: ContainerDown
+      - alert: ArrContainerDown
         expr: time() - container_last_seen{name=~"radarr|sonarr|prowlarr|bazarr|qbittorrent|plex|jellyfin"} > 60
         for: 1m
         labels:
@@ -33,7 +33,7 @@ groups:
         annotations:
           summary: "{{ $labels.name }} is down"
 
-      - alert: ContainerDown
+      - alert: DatabaseContainerDown
         expr: time() - container_last_seen{name=~"fileserver|mariadb|phpmyadmin|nginx"} > 60
         for: 1m
         labels:
