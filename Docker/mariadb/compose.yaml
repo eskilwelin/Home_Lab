@@ -18,6 +18,8 @@ services:
     restart: unless-stopped
     networks:
       - backend
+    secrets:
+      - db_secrets
 
   mariadb:
     image: mariadb:latest
@@ -50,6 +52,7 @@ services:
     
   nginx:
     image: nginx:latest
+    container_name: nginx
     ports:
       - "443:443"
     depends_on:
@@ -76,3 +79,5 @@ networks:
 secrets:
   samba_secrets: 
     file: samba_secrets.txt
+  db_secrets:
+    file: db_secrets.txt

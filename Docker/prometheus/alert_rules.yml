@@ -33,6 +33,14 @@ groups:
         annotations:
           summary: "{{ $labels.name }} is down"
 
+      - alert: ContainerDown
+        expr: time() - container_last_seen{name=~"fileserver|mariadb|phpmyadmin|nginx"} > 60
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.name }} is down"
+
       - alert: HighSwapUsage
         expr: (node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes * 100 > 50
         for: 5m
