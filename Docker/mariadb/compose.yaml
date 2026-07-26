@@ -21,9 +21,9 @@ services:
     secrets:
       - db_secrets
 
-  mariadb:
+  database:
     image: mariadb:latest
-    container_name: mariadb
+    container_name: database
     env_file: mariadb.env
     expose:
       - "3306"
@@ -40,7 +40,7 @@ services:
     image: phpmyadmin:latest
     container_name: phpmyadmin
     depends_on:
-      mariadb:
+      database:
         condition: service_healthy
     env_file: phpmyadmin.env
     expose:
