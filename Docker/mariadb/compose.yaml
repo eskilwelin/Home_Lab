@@ -12,7 +12,7 @@ services:
         - samba_secrets
     container_name: fileserver
     ports: 
-      - "445:445"
+      - "8445:445"
     volumes: 
       - ./share_data:/share
     restart: unless-stopped

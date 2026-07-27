@@ -6,7 +6,7 @@ DBPW=$(cat /run/secrets/db_secrets)
 DB_NAME=${1:-DefaultDB}
 
 mariadb-dump \
-  --host=mariadb \
+  --host=database \
   --port=3306 \
   --user=dbuser \
   --password="$DBPW" \
