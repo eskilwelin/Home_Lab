@@ -6,7 +6,23 @@
 import argparse
 import os
 import socket
+import sys
 import threading
+
+try:
+    import readline  # exposes the half-typed input line so we can redraw it; absent on Windows
+except ImportError:
+    readline = None
+
+PROMPT = "> "
+
+
+def show(text):
+    """Print an incoming line above the prompt, then redraw whatever was being typed."""
+    typed = readline.get_line_buffer() if readline else ""
+    # \r\x1b[K wipes the input line first so the message lands on a clean row.
+    sys.stdout.write("\r\x1b[K" + text + "\n" + PROMPT + typed)
+    sys.stdout.flush()
 
 
 def receive_loop(sock):
@@ -20,10 +36,10 @@ def receive_loop(sock):
             buffer += chunk
             while b"\n" in buffer:
                 line, buffer = buffer.split(b"\n", 1)
-                print(line.decode("utf-8", errors="replace").rstrip("\r"))
+                show(line.decode("utf-8", errors="replace").rstrip("\r"))
     except OSError:
         pass
-    print("* disconnected from server")
+    show("* disconnected from server")
     # The main thread is parked in input(); exit the process outright rather than wait for it.
     os._exit(0)
 
@@ -49,7 +65,7 @@ def main():
 
     try:
         while True:
-            line = input().strip()
+            line = input(PROMPT).strip()
             if line == "/quit":
                 break
             if line:
